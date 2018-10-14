@@ -1,6 +1,6 @@
 import { readFile } from 'fs'
-import path from 'path'
-import os from 'os'
+const path = require('path') // import does not work
+const os = require('os') // import does not work
 import * as crypto from 'crypto'
 import ini from 'ini'
 import { DragonchainRequestObject } from '../dragonchain-service/DragonchainRequestObject'
@@ -33,7 +33,7 @@ export class CredentialService {
    * @returns {DragonchainCredentials}
    * @throws {FailureByDesign<NOT_FOUND|UNEXPECTED_ERROR>}
    */
-  private static getDragonchainCredentials = async (dragonchainId: string): Promise<DragonchainCredentials> => {
+  static getDragonchainCredentials = async (dragonchainId: string): Promise<DragonchainCredentials> => {
     // check env vars first
     const creds = CredentialService.getCredsFromEnvVars()
     if (creds) return creds
@@ -65,7 +65,6 @@ export class CredentialService {
    */
   private static getHmacMessageString = (dro: DragonchainRequestObject) => {
     const hashedBase64Content = crypto.createHash(dro.hmacAlgo).update(dro.message).digest('base64')
-
     return [
       dro.method.toUpperCase(),
       dro.url,

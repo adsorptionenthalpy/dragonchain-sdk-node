@@ -33,14 +33,6 @@ describe('DragonchainService', () => {
         }
       })
     })
-
-    it('throws error when dragonchainId is not a string', () => {
-      expect(() => new DragonchainService(1 as unknown as string)).to.throw('dragonchainId must be a string.')
-    })
-
-    it('throws error when dragonchainId is not a undefined', () => {
-      expect(() => new DragonchainService(undefined as unknown as string)).to.throw('dragonchainId must be a string.')
-    })
   })
 
   describe('.isValidRuntime', () => {

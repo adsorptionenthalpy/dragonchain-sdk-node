@@ -86,9 +86,8 @@ export class DragonchainService {
     const dro = new DragonchainRequestObject(requestParams.method, path, this.dragonchainId, options.body || '')
     requestParams.headers.Authorization = await CredentialService.getAuthorizationHeader(dro)
     try {
-      const url = `https://${this.dragonchainId}.api.dragonchain.com${path}`
-      console.debug(`[DragonchainClient][${options.method}] => ${url}`)
-      const res = await fetch(url, requestParams)
+      console.debug(`[DragonchainClient][${options.method}] => ${dro.url}`)
+      const res = await fetch(dro.url, requestParams)
       const jsonAsObject = await res.json()
       if (res.status === 403) {
         throw new FailureByDesign('TOKEN_INVALID', jsonAsObject)
@@ -109,7 +108,7 @@ export class DragonchainService {
       if (res.status === 500) {
         throw new FailureByDesign('GENERIC_ERROR', jsonAsObject)
       }
-      console.debug(`[DragonchainClient][${options.method}] ${url} <= ${res.status} ${JSON.stringify(jsonAsObject)}`)
+      console.debug(`[DragonchainClient][${options.method}] ${dro.url} <= ${res.status} ${JSON.stringify(jsonAsObject)}`)
 
       return jsonAsObject
     } catch (e) {
