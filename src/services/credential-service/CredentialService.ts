@@ -1,13 +1,13 @@
-import fs from 'fs'
+import { readFile } from 'fs'
 import path from 'path'
 import os from 'os'
 import * as crypto from 'crypto'
 import ini from 'ini'
 import { DragonchainRequestObject } from '../dragonchain-service/DragonchainRequestObject'
 import { DragonchainCredentials } from './DragonchainCredentials'
-import { FailureByDesign } from 'src/errors/FailureByDesign'
+import { FailureByDesign } from '../../errors/FailureByDesign'
 import { promisify } from 'util'
-const iPromiseToReadThisFile = promisify(fs.readFile)
+const iPromiseToReadThisFile = promisify(readFile)
 
 /**
  * @class CredentialService

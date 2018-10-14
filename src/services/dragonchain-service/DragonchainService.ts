@@ -2,7 +2,7 @@
  * DragonchainService
  * This module is meant to encapsulate the HTTP transactions bound for your Dragonchain.
  */
-import { FailureByDesign } from 'src/errors/FailureByDesign'
+import { FailureByDesign } from '../../errors/FailureByDesign'
 import { DragonchainRequestObject } from './DragonchainRequestObject'
 import { CredentialService } from '../credential-service/CredentialService'
 
@@ -20,11 +20,10 @@ export class DragonchainService {
    * @name constructor
    * @returns {DragonchainService} an instance of a Dragonchain HTTP Client
    * @param {string} dragonchainId dragonchain id to associate with this client
-   * @param {string|undefined} verify (Optional: true) Verify the TLS certificate of the dragonchain
+   * @param {boolean|undefined} verify (Optional: true) Verify the TLS certificate of the dragonchain
    */
   constructor (dragonchainId: string, verify = true) {
     if (typeof dragonchainId !== 'string') throw new FailureByDesign('VALIDATION_ERROR', 'dragonchainId must be a string.')
-    if (dragonchainId === undefined) throw new FailureByDesign('VALIDATION_ERROR', 'dragonchainId not be undefined.')
     this.dragonchainId = dragonchainId
     this.verify = verify
     this.defaultFetchOptions = {

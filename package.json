@@ -30,7 +30,7 @@
     "lint": "tslint -p tsconfig.json --format codeFrame",
     "fix": "tslint -p tsconfig.json --fix",
     "test": "NODE_ENV=test nyc --reporter=html --reporter=text mocha --opts ./spec/mocha.opts",
-    "test:watch": "NODE_ENV=test mocha --require ts-node/register ./spec/*.spec.ts --watch --watch-dirs ./spec/ --watch-extensions ts",
+    "test:watch": "NODE_ENV=test mocha --require ts-node/register ./src/**/*.spec.ts --watch --watch-dirs ./src/ --watch-extensions ts",
     "coverage": "yarn test && yarn coverage:show",
     "coverage:show": "opn coverage/index.html",
     "docs": "typedoc src --mode modules --target es6 --mode file --theme default --out docs && opn docs/index.html",
