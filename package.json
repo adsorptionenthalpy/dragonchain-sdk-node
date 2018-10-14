@@ -1,17 +1,17 @@
 {
-  "name": "package-name",
+  "name": "dragonchain-sdk",
   "version": "1.0.0",
   "license": "MIT",
-  "homepage": "",
+  "homepage": "https://github.com/dragonchain-inc/dragonchain-sdk",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-name/package-name"
+    "url": "https://github.com/dragonchain-inc/dragonchain-sdk"
   },
   "keywords": [],
-  "bugs": "path to issue tracker",
+  "bugs": "https://github.com/dragonchain-inc/dragonchain-sdk/issues",
   "author": {
-    "name": "your name",
-    "email": "your email"
+    "name": "Dean Shelton",
+    "email": "dean@dragonchain.com"
   },
   "main": "lib/module/commonjs/index.js",
   "module": "lib/module/esnext/index.js",
@@ -67,6 +67,8 @@
     }
   },
   "dependencies": {
+    "@types/ini": "^1.3.29",
+    "ini": "^1.3.5",
     "tslib": "^1.9.0"
   },
   "devDependencies": {
