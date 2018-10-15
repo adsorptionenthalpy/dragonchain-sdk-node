@@ -12,8 +12,5 @@ phases:
   build:
     commands:
       - yarn build
-      - yarn build:node
-      - yarn build:node:commonjs
-      - yarn build:node:esnext
       # - publish to NPM
 

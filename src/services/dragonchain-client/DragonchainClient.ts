@@ -1,12 +1,8 @@
-/**
- * DragonchainClient
- * This module is meant to encapsulate the HTTP transactions bound for your Dragonchain.
- */
 import { FailureByDesign } from '../../errors/FailureByDesign'
 import { DragonchainRequestObject } from './DragonchainRequestObject'
 import { CredentialService } from '../credential-service/CredentialService'
 import fetch from 'node-fetch'
-import { DragonchainTransactionCreatePayload } from 'src/interfaces/DragonchainTransaction';
+import { DragonchainTransactionCreatePayload } from 'src/interfaces/DragonchainTransaction'
 
 /**
  * @class DragonchainClient
