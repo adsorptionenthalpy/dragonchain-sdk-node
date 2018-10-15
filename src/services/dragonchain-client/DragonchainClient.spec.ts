@@ -9,34 +9,8 @@ chai.use(sinonChai)
 describe('DragonchainClient', () => {
   describe('constructor', () => {
     it('returns instance of DragonchainClient', () => {
-      const dragonchainService = new DragonchainClient('banana')
-      expect(dragonchainService instanceof DragonchainClient).to.equal(true)
-    })
-
-    it('assigns dragonchainId', () => {
-      const dragonchainService = new DragonchainClient('banana')
-      expect(dragonchainService.dragonchainId).to.equal('banana')
-    })
-
-    it('assigns verify', () => {
-      const verify = false
-      const dragonchainService = new DragonchainClient('banana', verify)
-      expect(dragonchainService.verify).to.equal(verify)
-    })
-
-    it('sets default verify to true', () => {
-      const dragonchainService = new DragonchainClient('banana')
-      expect(dragonchainService.verify).to.equal(true)
-    })
-
-    it('sets default defaultFetchOptions', () => {
-      const dragonchainService = new DragonchainClient('banana')
-      expect(dragonchainService.defaultFetchOptions).to.deep.equal({
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
+      const client = new DragonchainClient('banana')
+      expect(client instanceof DragonchainClient).to.equal(true)
     })
   })
 
@@ -72,7 +46,7 @@ describe('DragonchainClient', () => {
     const fakeFetch = stub().resolves({ status: 200, json: stub().resolves(fakeResponseObj) })
     const fakeCredentialService = { getAuthorizationHeader: stub().resolves('fakeCreds') }
     const fakeLogger = { log: stub(), debug: stub() }
-    const dragonchainService = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+    const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
     const expectedFetchOptions = {
       method: 'GET',
       headers: {
@@ -83,7 +57,7 @@ describe('DragonchainClient', () => {
     describe('.getTransaction', () => {
       it('calls #fetch() with correct params', async () => {
         const id = 'batman-transaction-id'
-        await dragonchainService.getTransaction(id)
+        await client.getTransaction(id)
         assert.calledWith(fakeFetch, `https://fakeDragonchainId.api.dragonchain.com/transaction/${id}`, expectedFetchOptions)
       })
     })
@@ -91,7 +65,7 @@ describe('DragonchainClient', () => {
     describe('.getBlock', () => {
       it('calls #fetch() with correct params', async () => {
         const id = 'robin-block-id'
-        await dragonchainService.getBlock(id)
+        await client.getBlock(id)
         assert.calledWith(fakeFetch, `https://fakeDragonchainId.api.dragonchain.com/block/${id}`, expectedFetchOptions)
       })
     })
@@ -99,7 +73,7 @@ describe('DragonchainClient', () => {
     describe('.getSmartContract', () => {
       it('calls #fetch() with correct params', async () => {
         const id = 'joker-smartcontract-id'
-        await dragonchainService.getSmartcontract(id)
+        await client.getSmartcontract(id)
         assert.calledWith(fakeFetch, `https://fakeDragonchainId.api.dragonchain.com/smartcontract/${id}`, expectedFetchOptions)
       })
     })
@@ -110,7 +84,7 @@ describe('DragonchainClient', () => {
     const fakeFetch = stub().resolves({ status: 200, json: stub().resolves(fakeResponseObj) })
     const fakeCredentialService = { getAuthorizationHeader: stub().resolves('fakeCreds') }
     const fakeLogger = { log: stub(), debug: stub() }
-    const dragonchainService = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+    const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
     const expectedFetchOptions = {
       method: 'POST',
       headers: {
@@ -127,7 +101,7 @@ describe('DragonchainClient', () => {
           payload: 'hi!' ,
           tag: 'Awesome!'
         }
-        await dragonchainService.postTransaction(transactionCreatePayload)
+        await client.postTransaction(transactionCreatePayload)
         const obj = { ...expectedFetchOptions, body: JSON.stringify(transactionCreatePayload) }
         assert.calledWith(fakeFetch, `https://fakeDragonchainId.api.dragonchain.com/transaction`, obj)
       })

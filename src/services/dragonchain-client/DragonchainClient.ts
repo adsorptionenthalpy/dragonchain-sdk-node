@@ -14,7 +14,7 @@ import { DragonchainTransactionCreatePayload } from 'src/interfaces/DragonchainT
  */
 export class DragonchainClient {
   private dragonchainId: string
-  private verify: boolean
+  // private verify: boolean
   private defaultFetchOptions: FetchOptions
   private credentialService: any
   private fetch: any
@@ -29,7 +29,7 @@ export class DragonchainClient {
    */
   constructor (dragonchainId: string, verify = true, injectedFetch: any = null, injectedCredentialService: any = null, logger: any = null) {
     this.dragonchainId = dragonchainId
-    this.verify = verify
+    // this.verify = verify
     this.logger = logger || console
     this.fetch = injectedFetch || fetch
     this.credentialService = injectedCredentialService || CredentialService
