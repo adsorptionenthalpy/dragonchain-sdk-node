@@ -1,14 +1,14 @@
 {
-  "name": "dragonchain-sdk",
+  "name": "dragonchain-sdk-node",
   "version": "1.0.0",
   "license": "MIT",
-  "homepage": "https://github.com/dragonchain-inc/dragonchain-sdk",
+  "homepage": "https://github.com/dragonchain-inc/dragonchain-sdk-node",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dragonchain-inc/dragonchain-sdk"
+    "url": "https://github.com/dragonchain-inc/dragonchain-sdk-node"
   },
   "keywords": [],
-  "bugs": "https://github.com/dragonchain-inc/dragonchain-sdk/issues",
+  "bugs": "https://github.com/dragonchain-inc/dragonchain-sdk-node/issues",
   "author": {
     "name": "Dean Shelton",
     "email": "dean@dragonchain.com"
@@ -33,7 +33,7 @@
     "test:watch": "NODE_ENV=test mocha --require ts-node/register ./src/**/*.spec.ts --watch --watch-dirs ./src/ --watch-extensions ts",
     "coverage": "yarn test && yarn coverage:show",
     "coverage:show": "opn coverage/index.html",
-    "docs": "typedoc ./src --mode modules --target es6 --mode file --theme default --out docs --ignoreCompilerErrors --externalPattern ./src/**/*.spec.ts --excludeExternals  && opn docs/index.html",
+    "docs": "typedoc ./src --mode modules --target es6 --mode file --theme default --out docs --ignoreCompilerErrors --excludeExternals  && opn docs/index.html",
     "docs:publish": "ts-node build/tools/gh-pages-publish.ts",
     "prepublishOnly": "yarn lint && yarn test && yarn build",
     "commit": "git-cz"
@@ -69,6 +69,7 @@
   "dependencies": {
     "@types/ini": "^1.3.29",
     "ini": "^1.3.5",
+    "node-fetch": "^2.2.0",
     "tslib": "^1.9.0"
   },
   "devDependencies": {
@@ -79,11 +80,14 @@
     "@types/lodash.camelcase": "^4.3.3",
     "@types/mocha": "^2.2.48",
     "@types/node": "^9.4.6",
+    "@types/node-fetch": "^2.1.2",
     "@types/sinon": "^5.0.5",
+    "@types/sinon-chai": "^3.2.0",
     "@types/webpack": "^3.8.8",
     "@webpack-contrib/test-utils": "^0.1.2",
     "awesome-typescript-loader": "^3.4.1",
     "chai": "^4.1.2",
+    "chai-match": "^1.1.1",
     "colors": "^1.1.2",
     "commitizen": "^2.9.6",
     "cz-conventional-changelog": "^2.1.0",
@@ -98,6 +102,7 @@
     "opn-cli": "^3.1.0",
     "shelljs": "^0.8.1",
     "sinon": "^6.3.5",
+    "sinon-chai": "^3.2.0",
     "ts-loader": "^3.5.0",
     "ts-node": "^5.0.0",
     "tslint": "^5.9.1",

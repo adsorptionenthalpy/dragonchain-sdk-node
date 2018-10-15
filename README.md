@@ -1,47 +1,39 @@
-# Typescript NODE module starter kit
+# Dragonchain JS SDK
 
-> A damn simple es5, es7 and Typescript starter kit for creating node modules.
-
-* Use [yarn](https://yarnpkg.com/lang/en/) as main package manager.
-* Use [typescript compiler](https://www.typescriptlang.org/) for generating node module.
-* Use [tslint](https://palantir.github.io/tslint/) for linting code.
-* Use [mocha](https://mochajs.org/) and [chai](http://chaijs.com/) for testing, support code coverage
-* Use [Travis-ci](https://travis-ci.org/) for continuous integration
-* Use [Commitizen](https://github.com/commitizen/cz-cli) and [Husky](https://github.com/typicode/husky) for git commits
+This is the Javascript SDK for interacting with a dragonchain. It provides functionality to be able to interact with a dragonchain through a simple sdk with minimal configuration needed.
 
 ## Getting started
 
+### Install
 ```bash
-git clone git@github.com:friends-of-js/typescript-node-module-starter-kit.git
-cd typescript-node-module-starter-kit
-yarn install
+npm i dragonchain-sdk --save
 ```
 
-You should change package name and repository url in package.json
+### Examples
+```javascript
+const myDcId = '3f2fef78-0000-0000-0000-9f2971607130';
+const myDragonchain = new DragonchainClient(myDcId);
 
-## Commands
-you can see a list of all available commands with description by typing in the console
-```bash
-yarn h
-```
-or
-```bash
-yarn i
+myDragonchain.getBlock('block-id-here').then((block) => {
+    // do stuff ...
+  }).catch(console.error);
 ```
 
-## Project structure
-|Name                 | Description                                                             |
-| ------              | :---------------------------:                                           |
-| src                 | Your source files placed here                                           |
-| spec                | Contains your tests files                                               |
-| node_modules        | Contains all your npm dependencies                                      |
-| build               | Scripts that responsible for building package                           |
-| build/declarations  | Typescript declarations for packages that does not provide declarations |
-| lib                 | Generated package                                                       |
-| lib/module          | Node module packages                                                    |
-| lib/module/commonjs | Commonjs node module using es5 features                                 |
-| lib/module/esnext   | Node module using es7 and esnext features                               |
-| coverage            | Code coverage report files                                              |
-| tools               | Tools for publication release and github pages                          |
-| tsconfig.json       | Main typescript configuration file                                      |
-| tslint.json         | Main tslint configuration file                                          |
+## Configuration
+
+In order to use this SDK, you need to have an Auth Key as well as an Auth Key ID for a given dragonchain.
+This can be loaded into the sdk in various ways, and are checked in the following order of precedence:
+
+1. The environment variables `DRAGONCHAIN_AUTH_KEY` and `DRAGONCHAIN_AUTH_KEY_ID` can be set with the appropriate values
+1. Write an ini-style credentials file at `~/.dragonchain/credentials` (or on Windows: `%LOCALAPPDATA%\dragonchain\credentials`) where the section name is the dragonchain id, with values for `auth_key` and `auth_key_id` like so:
+
+```ini
+[35a7371c-a20a-4830-9a59-5d654fcd0a4a]
+auth_key_id = JSDMWFUJDVTC
+auth_key = n3hlldsFxFdP2De0yMu6A4MFRh1HGzFvn6rJ0ICZzkE
+```
+
+
+## Documentation
+[link to github pages]()
+

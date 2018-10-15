@@ -18,9 +18,9 @@ export class DragonchainRequestObject {
     contentType?: 'application/json' // only application/json for now
   ) {
     this.version = '1'
-    this.method = method.toUpperCase()
-    this.url = `https://${this.dragonchainId}.api.dragonchain.com${path}`
+    this.method = method
     this.dragonchainId = dragonchainId
+    this.url = `https://${this.dragonchainId}.api.dragonchain.com${path}`
     this.timestamp = new Date().toISOString()
     this.message = message
     this.hmacAlgo = hmacAlgo || 'sha256'

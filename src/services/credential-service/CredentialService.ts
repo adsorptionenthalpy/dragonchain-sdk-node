@@ -3,17 +3,17 @@ const path = require('path') // import does not work
 const os = require('os') // import does not work
 import * as crypto from 'crypto'
 import ini from 'ini'
-import { DragonchainRequestObject } from '../dragonchain-service/DragonchainRequestObject'
+import { DragonchainRequestObject } from '../dragonchain-client/DragonchainRequestObject'
 import { DragonchainCredentials } from './DragonchainCredentials'
 import { FailureByDesign } from '../../errors/FailureByDesign'
 import { promisify } from 'util'
-const iPromiseToReadThisFile = promisify(readFile)
 
 /**
  * @class CredentialService
  * @description Stateless service to retrieve Dragonchain credentials for use in API requests
  */
 export class CredentialService {
+  private static iPromiseToReadThisFile = promisify(readFile)
 
   public static getAuthorizationHeader = async (dro: DragonchainRequestObject) => {
     const { version, hmacAlgo, dragonchainId } = dro
@@ -44,7 +44,7 @@ export class CredentialService {
     // check credential file on disk.
     const credentialFilePath = CredentialService.getCredentialFilePath()
     try {
-      const file = await iPromiseToReadThisFile(credentialFilePath, 'utf-8')
+      const file = await CredentialService.iPromiseToReadThisFile(credentialFilePath, 'utf-8')
       const config = ini.parse(file)
       const dragonchainCredentials = config[dragonchainId]
       if (dragonchainCredentials === undefined) { throw Error('MISCONFIGURED_CRED_FILE') } // caught below

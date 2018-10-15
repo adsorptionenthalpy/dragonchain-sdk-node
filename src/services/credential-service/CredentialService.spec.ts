@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import { CredentialService } from './CredentialService'
-import { DragonchainRequestObject } from '../dragonchain-service/DragonchainRequestObject'
+import { DragonchainRequestObject } from '../dragonchain-client/DragonchainRequestObject'
 import { stub } from 'sinon'
 
 describe('CredentialService', () => {
