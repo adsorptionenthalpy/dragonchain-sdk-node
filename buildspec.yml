@@ -1,0 +1,19 @@
+version: 0.1
+
+phases:
+  install:
+    commands:
+      - printenv
+      - npm install -g yarn
+      - yarn install
+  pre_build:
+    commands:
+      - yarn test
+  build:
+    commands:
+      - yarn build
+      - yarn build:node
+      - yarn build:node:commonjs
+      - yarn build:node:esnext
+      # - publish to NPM
+
