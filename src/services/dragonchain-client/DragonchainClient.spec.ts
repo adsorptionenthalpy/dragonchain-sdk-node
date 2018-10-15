@@ -41,24 +41,120 @@ describe('DragonchainClient', () => {
     })
   })
 
-  describe('GET', () => {
+  describe('!200', () => {
     const fakeResponseObj = { body: 'fakeResponseBody' }
-    const fakeFetch = stub().resolves({ status: 200, json: stub().resolves(fakeResponseObj) })
     const fakeCredentialService = { getAuthorizationHeader: stub().resolves('fakeCreds') }
     const fakeLogger = { log: stub(), debug: stub() }
-    const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
-    const expectedFetchOptions = {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: 'fakeCreds'
+
+    describe('403', () => {
+      const fakeFetch = stub().resolves({ status: 403, json: stub().resolves(fakeResponseObj) })
+      const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+      it('throws TOKEN_INVALID', async () => {
+        try {
+          await client.getBlock('whocares')
+        } catch (e) {
+          expect(e.code).to.equal('TOKEN_INVALID')
+        }
+      })
+    })
+
+    describe('401', () => {
+      const fakeFetch = stub().resolves({ status: 401, json: stub().resolves(fakeResponseObj) })
+      const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+      it('throws UNAUTHORIZED', async () => {
+        try {
+          await client.getBlock('whocares')
+        } catch (e) {
+          expect(e.code).to.equal('UNAUTHORIZED')
+        }
+      })
+    })
+
+    describe('409', () => {
+      const fakeFetch = stub().resolves({ status: 409, json: stub().resolves(fakeResponseObj) })
+      const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+      it('throws ALREADY_CLAIMED', async () => {
+        try {
+          await client.getBlock('whocares')
+        } catch (e) {
+          expect(e.code).to.equal('ALREADY_CLAIMED')
+        }
+      })
+    })
+
+    describe('404', () => {
+      const fakeFetch = stub().resolves({ status: 404, json: stub().resolves(fakeResponseObj) })
+      const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+      it('throws NOT_FOUND', async () => {
+        try {
+          await client.getBlock('whocares')
+        } catch (e) {
+          expect(e.code).to.equal('NOT_FOUND')
+        }
+      })
+    })
+
+    describe('500', () => {
+      const fakeFetch = stub().resolves({ status: 500, json: stub().resolves(fakeResponseObj) })
+      const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+      it('throws GENERIC_ERROR', async () => {
+        try {
+          await client.getBlock('whocares')
+        } catch (e) {
+          expect(e.code).to.equal('GENERIC_ERROR')
+        }
+      })
+    })
+
+    describe('unexpected', () => {
+      const fakeFetch = stub().resolves({ status: 111, json: stub().resolves(fakeResponseObj) })
+      const client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+      it('throws REQUEST_ERROR', async () => {
+        try {
+          await client.getBlock('whocares')
+        } catch (e) {
+          expect(e.code).to.equal('REQUEST_ERROR')
+        }
+      })
+    })
+  })
+
+  describe('GET', () => {
+    let fakeResponseObj
+    let fakeFetch: any
+    let fakeCredentialService
+    let fakeLogger
+    let client: DragonchainClient
+    let expectedFetchOptions: any
+
+    beforeEach(() => {
+      fakeResponseObj = { body: 'fakeResponseBody' }
+      fakeFetch = stub().resolves({ status: 200, json: stub().resolves(fakeResponseObj) })
+      fakeCredentialService = { getAuthorizationHeader: stub().resolves('fakeCreds') }
+      fakeLogger = { log: stub(), debug: stub() }
+      client = new DragonchainClient('fakeDragonchainId', true, fakeFetch, fakeCredentialService, fakeLogger)
+      expectedFetchOptions = {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'fakeCreds'
+        }
       }
-    }
+    })
     describe('.getTransaction', () => {
       it('calls #fetch() with correct params', async () => {
         const id = 'batman-transaction-id'
         await client.getTransaction(id)
         assert.calledWith(fakeFetch, `https://fakeDragonchainId.api.dragonchain.com/transaction/${id}`, expectedFetchOptions)
+      })
+    })
+
+    describe('.setDragonchainId', () => {
+      it('allows resetting the dragonchainId', async () => {
+        const id = 'goo-transaction-id'
+        client.setDragonchainId('hotBanana')
+        await client.getTransaction(id)
+        assert.calledWith(fakeFetch, `https://hotBanana.api.dragonchain.com/transaction/${id}`, expectedFetchOptions)
       })
     })
 

@@ -104,35 +104,35 @@ export class DragonchainClient {
     const requestParams = { ...this.defaultFetchOptions, ...options } as FetchOptions
     const dro = new DragonchainRequestObject(requestParams.method, path, this.dragonchainId, options.body || '')
     requestParams.headers.Authorization = await this.credentialService.getAuthorizationHeader(dro)
-    try {
-      this.logger.debug(`[DragonchainClient][${options.method}] => ${dro.url}`)
-      const res = await this.fetch(dro.url, requestParams)
-      const jsonAsObject = await res.json()
-      if (res.status === 403) {
-        throw new FailureByDesign('TOKEN_INVALID', jsonAsObject)
-      }
 
-      if (res.status === 401) {
-        throw new FailureByDesign('UNAUTHORIZED', jsonAsObject)
-      }
+    this.logger.debug(`[DragonchainClient][${options.method}] => ${dro.url}`)
+    const res = await this.fetch(dro.url, requestParams)
+    this.logger.debug(`[DragonchainClient][${options.method}] <= ${dro.url} ${res.status} ${res.statusText}`)
 
-      if (res.status === 409) {
-        throw new FailureByDesign('ALREADY_CLAIMED', jsonAsObject)
-      }
+    if (res.status === 403) {
+      throw new FailureByDesign('TOKEN_INVALID', res.statusText)
+    }
 
-      if (res.status === 404) {
-        throw new FailureByDesign('NOT_FOUND', jsonAsObject)
-      }
+    if (res.status === 401) {
+      throw new FailureByDesign('UNAUTHORIZED', res.statusText)
+    }
 
-      if (res.status === 500) {
-        throw new FailureByDesign('GENERIC_ERROR', jsonAsObject)
-      }
-      this.logger.debug(`[DragonchainClient][${options.method}] <= ${dro.url} ${res.status} ${JSON.stringify(jsonAsObject)}`)
+    if (res.status === 409) {
+      throw new FailureByDesign('ALREADY_CLAIMED', res.statusText)
+    }
 
-      return jsonAsObject
-    } catch (e) {
-      this.logger.debug('[DragonchainClient] ERROR', e)
-      throw new FailureByDesign('REQUEST_ERROR', `Error while communicating with the dragonchain: ${JSON.stringify(e)}`)
+    if (res.status === 404) {
+      throw new FailureByDesign('NOT_FOUND', res.statusText)
+    }
+
+    if (res.status === 500) {
+      throw new FailureByDesign('GENERIC_ERROR', res.statusText)
+    }
+    if (res.status >= 200 && res.status < 300) {
+      return res.json()
+    } else {
+      this.logger.debug('[DragonchainClient] ERROR')
+      throw new FailureByDesign('REQUEST_ERROR', `Error while communicating with the dragonchain.`)
     }
   }
 }
