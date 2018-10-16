@@ -1,34 +1,61 @@
-import { FailureByDesign } from '../../errors/FailureByDesign'
 import { DragonchainRequestObject } from './DragonchainRequestObject'
-import { CredentialService } from '../credential-service/CredentialService'
 import fetch from 'node-fetch'
-import { DragonchainTransactionCreatePayload } from 'src/interfaces/DragonchainTransaction'
+import { OverriddenCredentials } from './OverriddenCredentials'
+import {
+  DragonchainTransactionCreatePayload,
+  L1DragonchainTransactionFull,
+  DragonchainTransactionCreateResponse,
+  SmartContractAtRest
+} from 'src/interfaces/DragonchainClientInterfaces'
 
 /**
+ * HTTP Client that interfaces with the dragonchain api, using credentials stored on your machine.
  * @class DragonchainClient
- * @description HTTP Client that interfaces with the dragonchain api, using credentials stored on your machine.
  */
 export class DragonchainClient {
+  /**
+   * @hidden
+   */
   private dragonchainId: string
-  // private verify: boolean
+  /**
+   * @hidden
+   */
+  private verify: boolean
+  /**
+   * @hidden
+   */
   private defaultFetchOptions: FetchOptions
+  /**
+   * @hidden
+   */
   private credentialService: any
+  /**
+   * @hidden
+   */
   private fetch: any
+  /**
+   * @hidden
+   */
   private logger: any
 
   /**
+   * Create an Instance of a DragonchainClient.
    * @public
-   * @name constructor
-   * @returns {DragonchainClient} an instance of a Dragonchain HTTP Client
    * @param {string} dragonchainId dragonchain id to associate with this client
    * @param {boolean|undefined} verify (Optional: true) Verify the TLS certificate of the dragonchain
    */
-  constructor (dragonchainId: string, verify = true, injectedFetch: any = null, injectedCredentialService: any = null, logger: any = null) {
+  constructor (
+    dragonchainId: string,
+    verify = true,
+    injectedFetch: any = null,
+    injectedCredentialService: any = null,
+    injectedLogger: any = null
+    ) {
     this.dragonchainId = dragonchainId
-    // this.verify = verify
-    this.logger = logger || console
+    this.verify = verify
+    this.logger = injectedLogger || console
     this.fetch = injectedFetch || fetch
-    this.credentialService = injectedCredentialService || CredentialService
+    this.credentialService = injectedCredentialService
     this.defaultFetchOptions = {
       method: 'GET',
       headers: {
@@ -38,102 +65,146 @@ export class DragonchainClient {
   }
 
   /**
+   * Checks if a runtime string is valid
+   * @hidden
    * @static
    * @name isValidRuntime
-   * @description Checks if a runtime string is valid
    * @param {string} runtime runtime to validate
    * @returns {boolean} true if runtime is valid, false if not.
    */
   static isValidRuntime = (runtime: string) => validRuntimes.includes(runtime)
 
   /**
+   * Checks if a smart contract type string is valid
+   * @hidden
    * @static
    * @name isValidSmartContractType
-   * @description Checks if a smart contract type string is valid
    * @param {string} smartContractType smartContractType to validate
    * @returns {boolean} true if smart contract type is valid, false if not
    */
   static isValidSmartContractType = (smartContractType: string) => validSmartContractTypes.includes(smartContractType)
 
   /**
-   * @name setDragonchainId
-   * @description setter for dragonchainId
-   * @param {string} dragonchainId
+   * This method is used to override this SDK's attempt to look-up your credentials in your home directory.
+   * After using this method, subsequent requests to your dragonchain will not attempt to look for your credentials.
+   *
+   * To undo this on an instantiated DragonchainClient, simply call `#clearOverriddenCredentials`
+   * @param {string} authKeyId Auth Key ID used in HMAC
+   * @param {string} authKey Auth Key used in HMAC
+   */
+  public overrideCredentials = (authKey: string, authKeyId: string) => {
+    this.defaultFetchOptions.overriddenCredentials = { authKey, authKeyId }
+  }
+
+  /**
+   * Remove any overridden credentials and fall-back to using the standard credentials file.
+   * @name clearOverriddenCredentials
+   */
+  public clearOverriddenCredentials = () => this.defaultFetchOptions.overriddenCredentials = undefined
+
+  /**
+   * Change the dragonchainId for this DragonchainClient instance.
+   *
+   * After using this command, subsequent requests to your dragonchain will attempt to locate credentials in your home directory for the new dragonchainId.
+   * If unable to locate your credentials for the new chain, requests may throw a `FailureByDesign('NOT_FOUND')` error.
+   * If credentials were previously forcefully overridden and mismatch the ID you have set, your requests to dragonchain's api will fail due to an unverifiable HMAC signature.
+   * @param dragonchainId The id of the dragonchain you want to talk to.
    */
   public setDragonchainId = (dragonchainId: string) => {
     this.dragonchainId = dragonchainId
   }
 
-  public getTransaction = (transactionId: string) => {
+  /**
+   * Get a transaction by Id.
+   * @param transactionId The transaction id you are looking for.
+   */
+  public getTransaction = (transactionId: string): Promise<L1DragonchainTransactionFull> => {
     return this.get(`/transaction/${transactionId}`)
   }
 
-  public getBlock = (blockId: string) => {
+  /**
+   * Get a single block by ID
+   */
+  public getBlock = (blockId: string): Promise<L1DragonchainTransactionFull> => {
     return this.get(`/block/${blockId}`)
   }
 
-  public getSmartcontract = (contractName: string) => {
+  /**
+   * Get a single smart contract by name
+   */
+  public getSmartcontract = (contractName: string): Promise<SmartContractAtRest> => {
     return this.get(`/smartcontract/${contractName}`)
   }
 
-  public postTransaction = (transactionObject: DragonchainTransactionCreatePayload) => {
+  /**
+   * Create a new Transaction on your Dragonchain.
+   * This transaction, if properly structured, will be received by your dragonchain, hashed, and put into a queue for processing into a block.
+   * The `transaction_id` returned from this function can be used for checking the status of this transaction.
+   * Most importantly; the block in which it has been fixated.
+   *
+   * @param {DragonchainTransactionCreatePayload} transactionObject
+   * @returns {Promise<DragonchainTransactionCreateResponse>}
+   */
+  public postTransaction = (transactionObject: DragonchainTransactionCreatePayload): Promise<DragonchainTransactionCreateResponse> => {
     return this.post(`/transaction`, transactionObject)
   }
 
+  /**
+   * @hidden
+   */
   private get (path: string) {
     const options = { method: 'GET' } as FetchOptions
     return this.makeRequest(path, options)
   }
 
+  /**
+   * @hidden
+   */
   private post (path: string, body: object) {
     const options = { method: 'POST', body: JSON.stringify(body) } as FetchOptions
     return this.makeRequest(path, options)
   }
 
+  // PUT => NOT IMPLEMENTED
   // private put (path: string, body: object) {
   //   const options = { method: 'PUT', body: JSON.stringify(body) } as FetchOptions
   //   return this.makeRequest(path, options)
   // }
 
+  // DELETE => NOT IMPLEMENTED
   // private delete (path: string) {
   //   const options = { method: 'DELETE' } as FetchOptions
   //   return this.makeRequest(path, options)
   // }
 
+  /**
+   * @hidden
+   * @name toggleSslCertVerification
+   * @description For development purposes only! NodeJS naturally distrusts self signed certs (for good reason!). This function allows users the option to "not care" about self signed certs.
+   * @param {function} asyncFunction an async function to call while NODE_TLS_REJECT_UNAUTHORIZED is quickly toggled from "1" to "0" and back to "1"
+   */
+  private toggleSslCertVerification = async (asyncFunction: Function) => {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = (this.verify ? '1' : '0')
+    const result = await asyncFunction()
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '1'
+    return result
+  }
+
+  /**
+   * @hidden
+   */
   private async makeRequest (path: string, options: FetchOptions) {
-    const requestParams = { ...this.defaultFetchOptions, ...options } as FetchOptions
-    const dro = new DragonchainRequestObject(requestParams.method, path, this.dragonchainId, options.body || '')
-    requestParams.headers.Authorization = await this.credentialService.getAuthorizationHeader(dro)
 
-    this.logger.debug(`[DragonchainClient][${options.method}] => ${dro.url}`)
-    const res = await this.fetch(dro.url, requestParams)
-    this.logger.debug(`[DragonchainClient][${options.method}] <= ${dro.url} ${res.status} ${res.statusText}`)
+    const fetchOptions = { ...this.defaultFetchOptions, ...options } as FetchOptions
+    const dro = new DragonchainRequestObject(path, this.dragonchainId, fetchOptions)
 
-    if (res.status === 403) {
-      throw new FailureByDesign('TOKEN_INVALID', res.statusText)
-    }
+    // Add authorization header
+    fetchOptions.headers.Authorization = await this.credentialService.getAuthorizationHeader(dro)
 
-    if (res.status === 401) {
-      throw new FailureByDesign('UNAUTHORIZED', res.statusText)
-    }
-
-    if (res.status === 409) {
-      throw new FailureByDesign('ALREADY_CLAIMED', res.statusText)
-    }
-
-    if (res.status === 404) {
-      throw new FailureByDesign('NOT_FOUND', res.statusText)
-    }
-
-    if (res.status === 500) {
-      throw new FailureByDesign('GENERIC_ERROR', res.statusText)
-    }
-    if (res.status >= 200 && res.status < 300) {
-      return res.json()
-    } else {
-      this.logger.debug('[DragonchainClient] ERROR')
-      throw new FailureByDesign('REQUEST_ERROR', `Error while communicating with the dragonchain.`)
-    }
+    this.logger.debug(`[DragonchainClient][${dro.method}] => ${dro.url}`)
+    const res = await this.toggleSslCertVerification(() => this.fetch(dro.url, dro.asFetchOptions()))
+    this.logger.debug(`[DragonchainClient][${dro.method}] <= ${dro.url} ${res.status} ${res.statusText}`)
+    return res.json()
   }
 }
 
@@ -160,7 +231,10 @@ export interface FetchOptions {
     'Content-Type': 'application/json'
     Authorization: string
   }
-  body: string
+  body: string,
+  hmacAlgo: string,
+  contentType: string,
+  overriddenCredentials?: OverriddenCredentials
 }
 
 /**

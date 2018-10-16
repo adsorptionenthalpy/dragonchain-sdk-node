@@ -33,7 +33,8 @@
     "test:watch": "NODE_ENV=test mocha --require ts-node/register ./src/**/*.spec.ts --watch --watch-dirs ./src/ --watch-extensions ts",
     "coverage": "yarn test && yarn coverage:show",
     "coverage:show": "opn coverage/index.html",
-    "docs": "typedoc ./src --mode modules --target es6 --mode file --theme default --out docs --ignoreCompilerErrors --excludeExternals  && opn docs/index.html",
+    "docs": "typedoc ./src --mode modules --target es6 --mode file --theme default --out docs --ignoreCompilerErrors --excludeExternals --gaSite 'dragonchain-sdk-node' --hideGenerator",
+    "docs:preview": "yarn docs && opn docs/index.html",
     "docs:publish": "ts-node build/tools/gh-pages-publish.ts",
     "prepublishOnly": "yarn lint && yarn test && yarn build",
     "commit": "git-cz"

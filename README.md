@@ -1,5 +1,5 @@
 # Dragonchain JS SDK
-![codebuild status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiUFpHWHVOTHpQSHo4T3ZHSjBUT3JZQ0kzRHBybUFvbCt4WjB6MHFhY2F1dmxPTU1mUUZUYXk4d0QzTXpUMzhRek9sZ2dLclkwcTVjTEpJaElUN3cxQUdjPSIsIml2UGFyYW1ldGVyU3BlYyI6Ik56K0RLUFUxVnhpUHNCNWoiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
+![code-build status](https://codebuild.us-west-2.amazonaws.com/badges?uuid=eyJlbmNyeXB0ZWREYXRhIjoiUFpHWHVOTHpQSHo4T3ZHSjBUT3JZQ0kzRHBybUFvbCt4WjB6MHFhY2F1dmxPTU1mUUZUYXk4d0QzTXpUMzhRek9sZ2dLclkwcTVjTEpJaElUN3cxQUdjPSIsIml2UGFyYW1ldGVyU3BlYyI6Ik56K0RLUFUxVnhpUHNCNWoiLCJtYXRlcmlhbFNldFNlcmlhbCI6MX0%3D&branch=master)
 
 This is the Javascript SDK for interacting with a dragonchain. It provides functionality to be able to interact with a dragonchain through a simple sdk with minimal configuration needed.
 
@@ -11,15 +11,31 @@ npm i dragonchain-sdk --save
 ```
 
 ### Examples
+#### GetBlock
 ```javascript
 const myDcId = '3f2fef78-0000-0000-0000-9f2971607130';
-const myDragonchain = new DragonchainClient(myDcId);
-
-myDragonchain.getBlock('block-id-here').then((block) => {
-    // do stuff ...
-  }).catch(console.error);
+const dragonchain = new DragonchainClient(myDcId);
+try {
+  const blockAtRest = dragonchain.getBlock('block-id-here');
+  // ... do stuff ...
+} catch(e) {
+  if (e.code === 'NOT_FOUND') {
+    console.log('Oops! That Block does not exist!')
+  }
+}
 ```
 
+#### QueryTransactions
+```javascript
+const searchResult = await dragonchain.searchTransaction(`tag:"MyAwesomeTransactionTag"`)
+```
+
+#### OverrideCredentials
+This is fine for quick tests. For actual production use, you should use the [credential ini file](#configuration)
+```javascript
+dragonchain.overrideCredentials('DRAGONCHAIN_AUTH_KEY_ID','DRAGONCHAIN_AUTH_KEY')
+dragonchain.clearOverriddenCredentials() // unset credentials
+```
 ## Configuration
 
 In order to use this SDK, you need to have an Auth Key as well as an Auth Key ID for a given dragonchain.

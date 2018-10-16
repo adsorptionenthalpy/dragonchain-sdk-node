@@ -1,3 +1,5 @@
+import { OverriddenCredentials } from './OverriddenCredentials'
+import { FetchOptions } from './DragonchainClient'
 
 export class DragonchainRequestObject {
   method: string
@@ -8,23 +10,34 @@ export class DragonchainRequestObject {
   message: string
   hmacAlgo: string
   version: '1'
+  overriddenCredentials?: OverriddenCredentials
+  headers: object
+  body: any
 
   constructor (
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
     path: string,
     dragonchainId: string,
-    message: string,
-    hmacAlgo?: 'sha256', // only sha256 for now
-    contentType?: 'application/json' // only application/json for now
+    fetchOptions: FetchOptions
   ) {
     this.version = '1'
-    this.method = method
+    this.method = fetchOptions.method
     this.dragonchainId = dragonchainId
     this.url = `https://${this.dragonchainId}.api.dragonchain.com${path}`
     this.timestamp = new Date().toISOString()
-    this.message = message
-    this.hmacAlgo = hmacAlgo || 'sha256'
-    this.contentType = contentType || 'application/json'
+    this.message = fetchOptions.body
+    this.hmacAlgo = fetchOptions.hmacAlgo || 'sha256' // only sha256 for now
+    this.contentType = fetchOptions.contentType || 'application/json'
+    this.overriddenCredentials = fetchOptions.overriddenCredentials
+    this.headers = fetchOptions.headers
+    this.body = fetchOptions.body
+  }
+
+  asFetchOptions = () => {
+    return {
+      method: this.method,
+      headers: this.headers,
+      body: this.body
+    }
   }
 }
 

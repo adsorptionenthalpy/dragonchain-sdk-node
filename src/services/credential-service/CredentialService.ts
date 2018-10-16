@@ -13,8 +13,20 @@ import { promisify } from 'util'
  * @description Stateless service to retrieve Dragonchain credentials for use in API requests
  */
 export class CredentialService {
+  /**
+   * @hidden
+   */
   private static iPromiseToReadThisFile = promisify(readFile)
 
+  /**
+   * Return the HMAC signature used as the Authorization Header on REST requests to your dragonchain.
+   * By default, this function searches for credentials on your hard-drive for the requested dragonchainId.
+   * If you do not have matching dragonchain credentials in your home directory, you must directly override
+   * the credentials using the `DragonchainRequestObject#overridenCredentials` member.
+   *
+   * An easy way to achieve this is to use the `DragonchainClient#overrideCredentials` method.
+   * @public
+   */
   public static getAuthorizationHeader = async (dro: DragonchainRequestObject) => {
     const { version, hmacAlgo, dragonchainId } = dro
     const dcCreds = await CredentialService.getDragonchainCredentials(dragonchainId)
@@ -26,6 +38,7 @@ export class CredentialService {
   }
 
   /**
+   * @hidden
    * @private
    * @name getDragonchainCredentials
    * @description Get an authKey/authKeyId pair
@@ -58,6 +71,7 @@ export class CredentialService {
   }
 
   /**
+   * @hidden
    * @name getHmacMessageString
    * @private
    * @static
@@ -76,6 +90,7 @@ export class CredentialService {
   }
 
   /**
+   * @hidden
    * @static
    * @name getCredentialFilePath
    * @description Get the path for the credential file depending on the OS
@@ -86,6 +101,7 @@ export class CredentialService {
   private static getCredentialFilePath = () => path.join(os.homedir(), '.dragonchain', 'credentials')
 
   /**
+   * @hidden
    * @static
    * @name getCredsFromEnvVars
    * @description create a DragonchainCredentials object from creds found in environment variables.
