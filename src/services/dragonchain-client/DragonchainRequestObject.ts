@@ -4,10 +4,10 @@ import { FetchOptions } from './DragonchainClient'
 export class DragonchainRequestObject {
   method: string
   dragonchainId: string
-  timestamp: string
+  timestamp: string | number
   contentType: string
   url: string
-  message: string
+  path: string
   hmacAlgo: string
   version: '1'
   overriddenCredentials?: OverriddenCredentials
@@ -22,9 +22,9 @@ export class DragonchainRequestObject {
     this.version = '1'
     this.method = fetchOptions.method
     this.dragonchainId = dragonchainId
+    this.path = path
     this.url = `https://${this.dragonchainId}.api.dragonchain.com${path}`
     this.timestamp = new Date().toISOString()
-    this.message = fetchOptions.body
     this.hmacAlgo = fetchOptions.hmacAlgo || 'sha256' // only sha256 for now
     this.contentType = fetchOptions.contentType || 'application/json'
     this.overriddenCredentials = fetchOptions.overriddenCredentials

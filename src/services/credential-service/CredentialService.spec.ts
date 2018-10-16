@@ -6,25 +6,24 @@ import { stub } from 'sinon'
 describe('CredentialService', () => {
   describe('.getAuthorizationHeader', () => {
     it('returns expected hmac', async () => {
-      const authKey = 'fake-api-key'
-      const authKeyId = 'fake-api-key-id'
+      const authKey = 'key'
+      const authKeyId = 'id'
       stub(CredentialService, 'getDragonchainCredentials').onFirstCall().returns(Promise.resolve({ authKey, authKeyId }))
       const dro = {
-        method: 'GET',
-        path: 'fake-path',
-        dragonchainId: 'fake-dcid',
-        timestamp: 'fake-imestamp',
-        message: 'hi!',
+        method: 'GET', // get
+        path: '/chain/transaction',
+        dragonchainId: 'a dragonchain id',
+        timestamp: 12345,
         headers: {},
         body: '',
-        contentType: 'fakeContentType',
+        contentType: '',
         url: 'http.fake.org',
         hmacAlgo: 'sha256',
         version: '1',
         asFetchOptions: () => ({ method: dro.method, headers: dro.headers, body: dro.body })
       } as DragonchainRequestObject
       const result = await CredentialService.getAuthorizationHeader(dro)
-      expect(result).to.equal('DC1-HMAC-sha256 fake-api-key-id:dKRbNGk1QxbSHLL4J3kbIBcsE/7Al8BdDyb8o3Mxt9s=')
+      expect(result).to.equal('DC1-HMAC-SHA256 id:XBzopP+FZkSKZezdNzF0WW1I8E98Fp+q/8AicSk9FqY=')
     })
   })
 })

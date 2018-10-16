@@ -34,7 +34,7 @@ export class CredentialService {
     const message = CredentialService.getHmacMessageString(dro)
     const hmac = crypto.createHmac(hmacAlgo, authKey)
     const signature = hmac.update(message).digest('base64')
-    return `DC${version}-HMAC-${hmacAlgo} ${authKeyId}:${signature}`
+    return `DC${version}-HMAC-${hmacAlgo.toUpperCase()} ${authKeyId}:${signature}`
   }
 
   /**
@@ -78,10 +78,11 @@ export class CredentialService {
    * @description transform a DragonchainRequestObject into a compliant hmac message string
    */
   private static getHmacMessageString = (dro: DragonchainRequestObject) => {
-    const hashedBase64Content = crypto.createHash(dro.hmacAlgo).update(dro.message).digest('base64')
+    const base64EncodedBody = Buffer.from(dro.body).toString('base64')
+    const hashedBase64Content = crypto.createHash(dro.hmacAlgo).update(base64EncodedBody).digest('base64')
     return [
       dro.method.toUpperCase(),
-      dro.url,
+      dro.path,
       dro.dragonchainId,
       dro.timestamp,
       dro.contentType,
