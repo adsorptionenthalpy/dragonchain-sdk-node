@@ -1,17 +1,23 @@
 {
-  "name": "dragonchain-sdk-node",
-  "version": "1.0.0",
-  "license": "MIT",
-  "homepage": "https://github.com/dragonchain-inc/dragonchain-sdk-node",
+  "name": "dragonchain-sdk",
+  "version": "0.0.1",
+  "description": "Dragonchain SDK for Node",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/dragonchain-inc/dragonchain-sdk-node#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/dragonchain-inc/dragonchain-sdk-node"
+    "url": "git+https://github.com/dragonchain-inc/dragonchain-sdk-node.git"
   },
-  "keywords": [],
-  "bugs": "https://github.com/dragonchain-inc/dragonchain-sdk-node/issues",
+  "keywords": [
+    "dragonchain",
+    "sdk"
+  ],
+  "bugs": {
+    "url": "https://github.com/dragonchain-inc/dragonchain-sdk-node/issues"
+  },
   "author": {
-    "name": "Dean Shelton",
-    "email": "dean@dragonchain.com"
+    "name": "Dragonchain, Inc.",
+    "email": "support@dragonchain.com"
   },
   "main": "lib/module/commonjs/index.js",
   "module": "lib/module/esnext/index.js",
