@@ -15,6 +15,7 @@
  */
 
 import fetch from 'node-fetch'
+import { readFileSync } from 'fs'
 import {
   DragonchainTransactionCreatePayload,
   L1DragonchainTransactionFull,
@@ -83,6 +84,10 @@ export class DragonchainClient {
    * @hidden
    */
   private fetch: any
+  /**
+   * @hidden
+   */
+  private readFileSync: any
 
   /**
    * Create an Instance of a DragonchainClient.
@@ -102,6 +107,7 @@ export class DragonchainClient {
     this.verify = verify
     this.endpoint = `https://${dragonchainId}.api.dragonchain.com`
     this.fetch = injected.fetch || fetch
+    this.readFileSync = injected.readFileSync || readFileSync
     this.credentialService = injected.CredentialService || new CredentialService(dragonchainId)
   }
 
@@ -155,6 +161,13 @@ export class DragonchainClient {
   public setEndpoint = (endpoint: string) => {
     this.endpoint = endpoint
   }
+
+  /**
+   * Reads secrets given to a smart contract
+   *
+   * @param secretName the name of the secret to retrieve for smart contract
+   */
+  public getSecret = (secretName: string): string => this.readFileSync(`/var/openfaas/secret/sc-${this.credentialService.dragonchainId}-${secretName}`, 'utf-8')
 
   /**
    * Get a transaction by Id.

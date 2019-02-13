@@ -71,19 +71,23 @@ describe('DragonchainClient', () => {
   describe('GET', () => {
     let fakeResponseObj
     let fetch: any
+    let readFileSync: any
     let CredentialService: any
     let logger: any
     let client: DragonchainClient
     let expectedFetchOptions: any
     let fakeResponseText: string
+    let fakeSecretText: string
 
     beforeEach(() => {
       fakeResponseObj = { body: 'fakeResponseBody' }
       fakeResponseText = 'fakeString'
+      fakeSecretText = 'fakeSecret'
       fetch = stub().resolves({ status: 200, json: stub().resolves(fakeResponseObj), text: stub().resolves(fakeResponseText) })
+      readFileSync = stub().returns(fakeSecretText)
       CredentialService = { getAuthorizationHeader: stub().returns('fakeCreds'), dragonchainId: 'fakeDragonchainId' }
       logger = { log: stub(), debug: stub() }
-      const injected = { logger, CredentialService, fetch }
+      const injected = { logger, CredentialService, fetch, readFileSync }
 
       client = new DragonchainClient('fakeDragonchainId', true, injected)
       fakeTimeStamp = Date.now()
@@ -99,6 +103,13 @@ describe('DragonchainClient', () => {
           timestamp: fakeTime
         }
       }
+    })
+
+    describe('.getSecret', () => {
+      it('calls readFileSync with correct dragonchain id and secret name', () => {
+        client.getSecret('fakeSecretName')
+        assert.calledWith(readFileSync, '/var/openfaas/secret/sc-fakeDragonchainId-fakeSecretName', 'utf-8')
+      })
     })
 
     describe('.getStatus', () => {
@@ -222,7 +233,8 @@ describe('DragonchainClient', () => {
           'custom_environment_variables': { 'banana': 'banana', 'apple': 'banana' },
           'runtime': 'nodejs6.10',
           'code': 'code',
-          'origin': 'custom'
+          'origin': 'custom',
+          'handler': 'banana'
         }
         await client.createCustomContract(customContractPayload)
         const obj = { ...expectedFetchOptions, body: JSON.stringify(customContractPayload) }

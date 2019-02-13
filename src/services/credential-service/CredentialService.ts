@@ -145,14 +145,23 @@ export class CredentialService {
     const credentialFilePath = CredentialService.getCredentialFilePath()
     logger.debug(`Will look for credentials in file at ${credentialFilePath}`)
     try {
-      const config = ini.parse(readFileSync(credentialFilePath, 'utf-8'))
-      const dragonchainCredentials = config[dragonchainId]
-      if (dragonchainCredentials === undefined) { throw Error('MISCONFIGURED_CRED_FILE') } // caught below
-      const { auth_key_id, auth_key } = config[dragonchainId]
-      return { authKey: auth_key, authKeyId: auth_key_id } as DragonchainCredentials
-    } catch (e) {
-      if (e.message === 'MISCONFIGURED_CRED_FILE') { throw new FailureByDesign('NOT_FOUND', `credential file is missing a config for ${dragonchainId}`) }
-      if (e.code === 'ENOENT') { throw new FailureByDesign('NOT_FOUND', `credential file not found at "${credentialFilePath}"`) }
+      try {
+        const config = ini.parse(readFileSync(credentialFilePath, 'utf-8'))
+        const dragonchainCredentials = config[dragonchainId]
+        if (dragonchainCredentials === undefined) { throw Error('MISCONFIGURED_CRED_FILE') } // caught below
+        const { auth_key_id, auth_key } = config[dragonchainId]
+        return { authKey: auth_key, authKeyId: auth_key_id } as DragonchainCredentials
+      } catch (e) {
+        logger.error()
+        if (e.message === 'MISCONFIGURED_CRED_FILE') { logger.debug(`credential file is missing a config for ${dragonchainId}`) }
+        if (e.code === 'ENOENT') { logger.debug(`credential file not found at "${credentialFilePath}"`) }
+      }
+
+      const authKey = readFileSync(`/var/openfaas/secret/sc-${dragonchainId}-authKey`, 'utf-8')
+      const authKeyId = readFileSync(`/var/openfaas/secret/sc-${dragonchainId}-authKeyId`, 'utf-8')
+      return { authKey, authKeyId } as DragonchainCredentials
+    } catch (error) {
+      if (error.code === 'ENOENT') { throw new FailureByDesign('NOT_FOUND', 'credentials missing from mounted secrets volume') }
       throw new FailureByDesign('UNEXPECTED_ERROR', `Something unexpected happened while looking for credentials at "${credentialFilePath}"`)
     }
   }
