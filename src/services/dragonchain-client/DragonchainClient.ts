@@ -22,7 +22,7 @@ import {
   DragonchainTransactionCreateResponse,
   SmartContractAtRest,
   ContractRuntime,
-  CustomContractCreationSchema,
+  ContractCreationSchema,
   L1DragonchainTransactionQueryResult,
   DragonchainContractCreateResponse,
   SupportedHTTP,
@@ -30,16 +30,17 @@ import {
   L1DragonchainStatusResult,
   SmartContractType,
   DragonchainBlockQueryResult,
-  validContractLibraries,
   DragonchainBulkTransactions,
   Response,
   Verifications,
   DragonnetConfigSchema,
   levelVerifications,
-  UpdateDataResponse,
+  UpdateResponse,
   TransactionTypeStructure,
   TransactionTypeResponse,
-  CustomIndexStructure
+  CustomIndexStructure,
+  SmartContractExecutionOrder,
+  SmartContractDesiredState
 } from 'src/interfaces/DragonchainClientInterfaces'
 import { CredentialService } from '../credential-service/CredentialService'
 import { URLSearchParams } from 'url'
@@ -239,43 +240,47 @@ export class DragonchainClient {
   }
 
   /**
-   * Updates existing contract fields in a custom contract
-   * @param {string} name The name of the existing contract you want to update
-   * @param {string} status update the status of the contract
-   * @param {string} scType update the smart contract type
-   * @param {string} code update the code on the contract
-   * @param {string} runtime update the runtime of the contract
-   * @param {boolean} serial update whether or not the contract runs serial
-   * @param {object} envVars update the envrionment variables on a contract
+   * Updates existing contract fields
+   * @param {string} txnType The name of the existing contract you want to update
+   * @param {string} image The docker image containing the smart contract logic
+   * @param {string} cmd Entrypoint command to run in the docker container
+   * @param {SmartContractExecutionOrder} executionOrder Order of execution. Valid values 'parallel' or 'serial'
+   * @param {SmartContractDesiredState} desiredState Change the state of a contract. Valid values are "active" and "inactive". You may only change the state of an active or inactive contract.
+   * @param {string[]} args List of arguments to the cmd field
+   * @param {object} env mapping of environment variables for your contract
+   * @param {object} secrets mapping of secrets for your contract
+   * @param {number} seconds The seconds of scheduled execution
+   * @param {string} cron The rate of scheduled execution specified as a cron
+   * @param {string} auth basic-auth for pulling docker images, base64 encoded (e.g. username:password)
    */
-  public updateCustomSmartContract = async (name: string, status?: string, scType?: string, code?: string, runtime?: string, serial?: boolean, envVars?: {}) => {
+  public updateSmartContract = async (txnType: string, image?: string, cmd?: string, executionOrder?: SmartContractExecutionOrder, desiredState?: SmartContractDesiredState, args?: string[], env?: {}, secrets?: {}, seconds?: number, cron?: string, auth?: string) => {
     const body: any = {
-      'version': '1',
-      'name': name,
-      'status': status,
-      'sc_type': scType,
-      'code': code,
-      'runtime': runtime,
-      'is_serial': serial
+      version: '3',
+      dcrn: 'SmartContract::L1::Update',
+      txn_type: txnType
     }
-    if (envVars) {
-      body['custom_environment_variables'] = envVars
-    }
-    return await this.put(`/contract/${body.name}`, body) as Response<UpdateDataResponse>
+
+    if (image) body['image'] = image
+    if (cmd) body['cmd'] = cmd
+    if (executionOrder) body['execution_order'] = executionOrder
+    if (desiredState) body['desired_state'] = desiredState
+    if (args) body['args'] = args
+    if (env) body['env'] = env
+    if (secrets) body['secrets'] = secrets
+    if (seconds) body['seconds'] = seconds
+    if (cron) body['cron'] = cron
+    if (auth) body['auth'] = auth
+
+    return await this.put(`/contract/${txnType}`, body) as Response<UpdateResponse>
   }
 
   /**
-   * Update the status of a library contract
-   * @param {string} name the name of the existing library contract that you want to update
-   * @param {string} status update the status
+   * Deletes a smart contract
+   * @param {string} txnType
+   * @returns {Promise<UpdateResponse>} success message upon successful update
    */
-  public updateLibrarySmartContract = async (name: string, status?: string) => {
-    const body: any = {
-      'version': '1',
-      'name': name,
-      'status': status
-    }
-    return await this.put(`/contract/${body.name}`, body) as Response<UpdateDataResponse>
+  public deleteSmartContract = async (txnType: string) => {
+    return await this.delete(`/contract/${txnType}`) as Response<UpdateResponse>
   }
 
   /**
@@ -293,7 +298,7 @@ export class DragonchainClient {
         'broadcastInterval': broadcastInterval
       }
     }
-    return await this.put(`/update-matchmaking-data`, matchmakingUpdate) as Response<UpdateDataResponse>
+    return await this.put(`/update-matchmaking-data`, matchmakingUpdate) as Response<UpdateResponse>
   }
 
   /**
@@ -312,7 +317,7 @@ export class DragonchainClient {
     })
     // Make sure SOME valid levels were provided by checking if dragonnet is an empty object
     if (Object.keys(dragonnet).length === 0) throw new FailureByDesign('BAD_REQUEST', 'No valid levels provided')
-    return await this.put(`/update-matchmaking-data`, { dragonnet }) as Response<UpdateDataResponse>
+    return await this.put(`/update-matchmaking-data`, { dragonnet }) as Response<UpdateResponse>
   }
 
   /**
@@ -339,19 +344,10 @@ export class DragonchainClient {
 
   /**
    * Create a new Smart Contract on your Dragonchain.
-   * Create a new custom smart contract on your dragonchain
    * @returns {Promise<DragonchainContractCreateResponse>}
    */
-  public createCustomContract = async (body: CustomContractCreationSchema) => {
-    return await this.post(`/contract/${body.name}`, body) as Response<DragonchainContractCreateResponse>
-  }
-
-  /**
-   * Create a preconfigure contract from our library, using the provided interfaces
-   * @param {validContractLibraries} body the preconfigured interfaces for smart contract libraries
-   */
-  public createLibraryContract = async (body: validContractLibraries) => {
-    return await this.post(`/contract/${body.name}`, body) as Response<DragonchainContractCreateResponse>
+  public createContract = async (body: ContractCreationSchema) => {
+    return await this.post(`/contract/${body.txn_type}`, body) as Response<DragonchainContractCreateResponse>
   }
 
   /**
@@ -398,7 +394,7 @@ export class DragonchainClient {
    * @param {TransactionTypeStructure} txnTypeStructure
    */
   public registerTransactionType = async (txnTypeStructure: TransactionTypeStructure) => {
-    return await this.post('/transaction-type', txnTypeStructure) as Response<UpdateDataResponse>
+    return await this.post('/transaction-type', txnTypeStructure) as Response<UpdateResponse>
   }
 
   /**
@@ -407,7 +403,7 @@ export class DragonchainClient {
    * @param {string} transactionType
    */
   public deleteTransactionType = async (transactionType: string) => {
-    return await this.delete(`/transaction-type/${transactionType}`) as Response<UpdateDataResponse>
+    return await this.delete(`/transaction-type/${transactionType}`) as Response<UpdateResponse>
   }
 
   /**
@@ -426,7 +422,7 @@ export class DragonchainClient {
    */
   public updateTransactionType = async (transactionType: string, customIndexes: CustomIndexStructure[]) => {
     const params = { version: '1', custom_indexes: customIndexes }
-    return await this.put(`/transaction-type/${transactionType}`, params) as Response<UpdateDataResponse>
+    return await this.put(`/transaction-type/${transactionType}`, params) as Response<UpdateResponse>
   }
 
   /**

@@ -18,7 +18,8 @@ import * as chai from 'chai'
 import * as sinonChai from 'sinon-chai'
 import { stub, assert, useFakeTimers, match } from 'sinon'
 import { DragonchainClient } from './DragonchainClient'
-import { ContractRuntime, SmartContractType, CustomContractCreationSchema, ContractCreateCurrencyContract } from 'src/interfaces/DragonchainClientInterfaces'
+import { ContractRuntime, SmartContractType, ContractCreationSchema } from 'src/interfaces/DragonchainClientInterfaces'
+// ContractCreateCurrencyContract
 /**
  * @hidden
  */
@@ -186,6 +187,35 @@ describe('DragonchainClient', () => {
     })
   })
 
+  describe('DELETE', () => {
+    const fakeResponseObj = { body: 'fakeResponseBody' }
+    const fakeResponseText = 'fakeString'
+    const fetch = stub().resolves({ status: 200, json: stub().resolves(fakeResponseObj), text: stub().resolves(fakeResponseText) })
+    const CredentialService = { getAuthorizationHeader: stub().returns('fakeCreds'), dragonchainId: 'fakeDragonchainId' }
+    const logger = { log: stub(), debug: stub() }
+    const injected = { logger, CredentialService, fetch }
+    const client = new DragonchainClient('fakeDragonchainId', true, injected)
+    fakeTimeStamp = Date.now()
+    useFakeTimers({ now: fakeTimeStamp, shouldAdvanceTime: false })
+    fakeTime = new Date(fakeTimeStamp).toISOString()
+    const expectedFetchOptions = {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        dragonchain: 'fakeDragonchainId',
+        Authorization: 'fakeCreds',
+        timestamp: fakeTime
+      },
+      body: undefined
+    }
+
+    it('.deleteSmartContract', async () => {
+      const param = 'banana'
+      await client.deleteSmartContract(param)
+      assert.calledWith(fetch, 'https://fakeDragonchainId.api.dragonchain.com/contract/banana', expectedFetchOptions)
+    })
+  })
+
   describe('POST', () => {
     const fakeResponseObj = { body: 'fakeResponseBody' }
     const fakeResponseText = 'fakeString'
@@ -224,48 +254,21 @@ describe('DragonchainClient', () => {
 
     describe('.createContract', () => {
       it('create custom contract successfully', async () => {
-        const customContractPayload: CustomContractCreationSchema = {
-          'version': '2',
+        const contractPayload: ContractCreationSchema = {
+          'version': '3',
           'dcrn': 'SmartContract::L1::Create',
-          'name': 'name',
-          'sc_type': 'transaction',
-          'is_serial': true,
-          'custom_environment_variables': { 'banana': 'banana', 'apple': 'banana' },
-          'runtime': 'nodejs6.10',
-          'code': 'code',
-          'origin': 'custom',
-          'handler': 'banana'
+          'txn_type': 'name',
+          'image': 'ubuntu:latest',
+          'execution_order': 'serial',
+          'env': { 'banana': 'banana', 'apple': 'banana' },
+          'cmd': 'banana',
+          'args': ['-m cool']
         }
-        await client.createCustomContract(customContractPayload)
-        const obj = { ...expectedFetchOptions, body: JSON.stringify(customContractPayload) }
+        await client.createContract(contractPayload)
+        const obj = { ...expectedFetchOptions, body: JSON.stringify(contractPayload) }
         assert.calledWith(fetch, `https://fakeDragonchainId.api.dragonchain.com/contract/name`, obj)
       })
-
-      it('create library contract successfully', async () => {
-        const libraryContractPayload: ContractCreateCurrencyContract = {
-          'custom_environment_variables': {
-            'addressScheme': 'ethereum',
-            'governance': 'ethereum',
-            'originWalletAddress': 'string',
-            'precision': 2,
-            'totalAmount': 10
-          },
-          'dcrn': 'SmartContract::L1::Create',
-          'is_serial': true,
-          'libraryContractName': 'currency',
-          'name': 'flimflam',
-          'origin': 'library',
-          'runtime': 'nodejs8.10',
-          'sc_type': 'transaction',
-          'version': '2'
-        }
-        await client.createLibraryContract(libraryContractPayload)
-        const obj = { ...expectedFetchOptions, body: JSON.stringify(libraryContractPayload) }
-        assert.calledWith(fetch, `https://fakeDragonchainId.api.dragonchain.com/contract/flimflam`, obj)
-      })
-
     })
-
   })
 
   describe('PUT', () => {
@@ -290,16 +293,17 @@ describe('DragonchainClient', () => {
       }
     }
 
-    describe('.updateCustomSmartContract', () => {
+    describe('.updateSmartContract', () => {
       it('calls #fetch() with correct params', async () => {
-        const name = 'smartContractName'
-        const status = 'GrilledCheese'
+        const txnType = 'smartContractName'
+        const status = 'active'
         const fakeBodyResponse: any = {
-          'version': '1',
-          'name': name,
-          'status': status
+          'version': '3',
+          'dcrn': 'SmartContract::L1::Update',
+          'txn_type': txnType,
+          'desired_state': status
         }
-        await client.updateCustomSmartContract(name, status)
+        await client.updateSmartContract(txnType, undefined, undefined, undefined, status)
         const id = 'smartContractName'
         const obj = { ...expectedFetchOptions, body: JSON.stringify(fakeBodyResponse) }
         assert.calledWith(fetch, `https://fakeDragonchainId.api.dragonchain.com/contract/${id}`, obj)
