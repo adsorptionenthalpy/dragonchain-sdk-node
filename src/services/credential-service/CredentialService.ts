@@ -128,7 +128,7 @@ export class CredentialService {
    * @hidden
    * @name getDragonchainCredentials
    * @description Get an authKey/authKeyId pair
-   * @param {string} DragonchainId (optional) dragonchainId to get keys for (default pulling from config files)
+   * @param {string} dragonchainId (optional) dragonchainId to get keys for (default pulling from config files)
    * @returns {DragonchainCredentials}
    * @throws {FailureByDesign<NOT_FOUND|UNEXPECTED_ERROR>}
    */
@@ -157,8 +157,8 @@ export class CredentialService {
         if (e.code === 'ENOENT') { logger.debug(`credential file not found at "${credentialFilePath}"`) }
       }
 
-      const authKey = readFileSync(`/var/openfaas/secret/sc-${dragonchainId}-authKey`, 'utf-8')
-      const authKeyId = readFileSync(`/var/openfaas/secret/sc-${dragonchainId}-authKeyId`, 'utf-8')
+      const authKey = readFileSync(`/var/openfaas/secret/sc-${process.env.SMART_CONTRACT_ID}-auth-key`, 'utf-8')
+      const authKeyId = readFileSync(`/var/openfaas/secret/sc-${process.env.SMART_CONTRACT_ID}-secret-key-id`, 'utf-8')
       return { authKey, authKeyId } as DragonchainCredentials
     } catch (error) {
       if (error.code === 'ENOENT') { throw new FailureByDesign('NOT_FOUND', 'credentials missing from mounted secrets volume') }

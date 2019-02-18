@@ -108,8 +108,9 @@ describe('DragonchainClient', () => {
 
     describe('.getSecret', () => {
       it('calls readFileSync with correct dragonchain id and secret name', () => {
+        process.env.SMART_CONTRACT_ID = 'fakeSmartContractId'
         client.getSecret('fakeSecretName')
-        assert.calledWith(readFileSync, '/var/openfaas/secret/sc-fakeDragonchainId-fakeSecretName', 'utf-8')
+        assert.calledWith(readFileSync, '/var/openfaas/secret/sc-fakeSmartContractId-fakeSecretName', 'utf-8')
       })
     })
 
